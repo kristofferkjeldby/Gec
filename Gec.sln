@@ -3,6 +3,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gec.Tests", "Gec.Tests\Gec.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gec.Core", "Gec.Core\Gec.Core.csproj", "{FEEFC5DF-7609-4D7E-9F50-D40ABE44A108}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gec.Tokenizer", "Gec.Tokenizer\Gec.Tokenizer.csproj", "{E7FEF6C7-7483-439B-B47B-6D5D49EBF21B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gec.Console", "Gec.Console\Gec.Console.csproj", "{F188D63A-06B7-47D9-995F-3470462AB439}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +21,15 @@ Global
 		{FEEFC5DF-7609-4D7E-9F50-D40ABE44A108}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEEFC5DF-7609-4D7E-9F50-D40ABE44A108}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEEFC5DF-7609-4D7E-9F50-D40ABE44A108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7FEF6C7-7483-439B-B47B-6D5D49EBF21B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7FEF6C7-7483-439B-B47B-6D5D49EBF21B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7FEF6C7-7483-439B-B47B-6D5D49EBF21B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7FEF6C7-7483-439B-B47B-6D5D49EBF21B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F188D63A-06B7-47D9-995F-3470462AB439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F188D63A-06B7-47D9-995F-3470462AB439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F188D63A-06B7-47D9-995F-3470462AB439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F188D63A-06B7-47D9-995F-3470462AB439}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal

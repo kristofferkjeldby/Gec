@@ -41,3 +41,5 @@ artifacts/
 
 # Rider-specific user settings
 *.DotSettings.user
+AGENTS.md
+.editorconfig

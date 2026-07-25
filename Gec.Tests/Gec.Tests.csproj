@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Gec.Core\Gec.Core.csproj"/>
+        <ProjectReference Include="..\Gec.Tokenizer\Gec.Tokenizer.csproj"/>
     </ItemGroup>
 
 </Project>

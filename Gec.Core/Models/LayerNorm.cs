@@ -1,4 +1,5 @@
 using Gec.Core.Extensions;
+using Gec.Core.Training;
 
 namespace Gec.Core.Models;
 
@@ -8,15 +9,27 @@ public class LayerNorm
     private readonly double[] _beta;
     private readonly double _epsilon;
 
+    private readonly VectorParameter _gammaParameter;
+    private readonly VectorParameter _betaParameter;
+
     // Populated by Forward and read by Backward; only valid after a Forward call.
     private double[,] _xHat = null!;
     private double[] _stdInv = null!;
 
-    public LayerNorm(int dimension, double epsilon = 1e-5)
+    public LayerNorm(int dimension, double epsilon = 1e-5, string name = "layerNorm")
     {
         _gamma = Enumerable.Repeat(1.0, dimension).ToArray();
         _beta = new double[dimension];
         _epsilon = epsilon;
+
+        _gammaParameter = new VectorParameter($"{name}.gamma", _gamma);
+        _betaParameter = new VectorParameter($"{name}.beta", _beta);
+    }
+
+    public IEnumerable<Parameter> Parameters()
+    {
+        yield return _gammaParameter;
+        yield return _betaParameter;
     }
 
     public double[,] Forward(double[,] input) // input shape: [seqLen, dim]
@@ -80,5 +93,15 @@ public class LayerNorm
         }
 
         return (gradInput, gradGamma, gradBeta);
+    }
+
+    public double[,] Backpropagate(double[,] gradOutput)
+    {
+        var (gradInput, gradGamma, gradBeta) = Backward(gradOutput);
+
+        _gammaParameter.AddGradient(gradGamma);
+        _betaParameter.AddGradient(gradBeta);
+
+        return gradInput;
     }
 }

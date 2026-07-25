@@ -1,3 +1,5 @@
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Gec.Core.Extensions;
 
 namespace Gec.Core.Common;
@@ -15,29 +17,52 @@ public static class Matmul
 
         var result = new double[rows, cols];
 
-        for (int i = 0; i < rows; i++)
-        {
-            for (int j = 0; j < cols; j++)
-            {
-                double r = 0;
+        if (rows == 0 || inner == 0 || cols == 0)
+            return result;
 
-                for (int k = 0; k < inner; k++)
+        var left = MemoryMarshal.CreateSpan(ref matrix1[0, 0], matrix1.Length);
+        var right = MemoryMarshal.CreateSpan(ref matrix2[0, 0], matrix2.Length);
+        var target = MemoryMarshal.CreateSpan(ref result[0, 0], result.Length);
+
+        var width = Vector<double>.Count;
+
+        for (var i = 0; i < rows; i++)
+        {
+            var resultRow = target.Slice(i * cols, cols);
+
+            for (var k = 0; k < inner; k++)
+            {
+                var scale = left[i * inner + k];
+
+                if (scale == 0)
+                    continue;
+
+                var sourceRow = right.Slice(k * cols, cols);
+                var scaleVector = new Vector<double>(scale);
+
+                var j = 0;
+
+                for (; j <= cols - width; j += width)
                 {
-                    r += matrix1[i, k] * matrix2[k, j];
+                    var updated = new Vector<double>(sourceRow.Slice(j, width)) * scaleVector
+                                  + new Vector<double>(resultRow.Slice(j, width));
+
+                    updated.CopyTo(resultRow.Slice(j, width));
                 }
 
-                result[i, j] = r;
+                for (; j < cols; j++)
+                    resultRow[j] += scale * sourceRow[j];
             }
         }
 
         return result;
     }
-    
+
     public static (double[,] gradA, double[,] gradB) Backward(double[,] a, double[,] b, double[,] gradOutput)
     {
         var gradA = Forward(gradOutput, b.Transpose());
         var gradB = Forward(a.Transpose(), gradOutput);
-        
+
         return (gradA, gradB);
     }
 }

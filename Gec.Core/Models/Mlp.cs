@@ -1,4 +1,5 @@
 using Gec.Core.Common;
+using Gec.Core.Training;
 
 namespace Gec.Core.Models;
 
@@ -11,11 +12,13 @@ public class Mlp
     private double[,] _hidden = null!;
     private double[,] _activated = null!;
 
-    public Mlp(int dModel, int dFf)
+    public Mlp(int dModel, int dFf, Random? random = null, string name = "mlp")
     {
-        _up = new Linear(dModel, dFf);
-        _down = new Linear(dFf, dModel);
+        _up = new Linear(dModel, dFf, random, $"{name}.up");
+        _down = new Linear(dFf, dModel, random, $"{name}.down");
     }
+
+    public IEnumerable<Parameter> Parameters() => _up.Parameters().Concat(_down.Parameters());
 
     public double[,] Forward(double[,] input) // input shape: [seqLen, dModel]
     {
@@ -44,5 +47,13 @@ public class Mlp
         var (gradInput, gradWUp, gradBUp) = _up.Backward(input, gradHidden);
 
         return (gradInput, gradWUp, gradBUp, gradWDown, gradBDown);
+    }
+
+    public double[,] Backpropagate(double[,] gradOutput)
+    {
+        var gradActivated = _down.Backpropagate(gradOutput);
+        var gradHidden = Matrix.ApplyElementBackward(_hidden, gradActivated, Gelu.GeluApproxBackward);
+
+        return _up.Backpropagate(gradHidden);
     }
 }
