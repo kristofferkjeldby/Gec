@@ -23,26 +23,29 @@ public class MergeRule
     public bool Apply(List<int> tokens)
     {
         var changed = false;
+        var result = new List<int>(tokens.Count);
 
-        var count = tokens.Count;
-
-        for (int offset = 0; offset < count-1; offset++)
+        for (var i = 0; i < tokens.Count; i++)
         {
-            var currentFirstToken = tokens[offset];
-            var currentSecondToken = tokens[offset+1];
-
-            if (currentFirstToken == firstToken && currentSecondToken == secondToken)
+            if (i < tokens.Count - 1 && tokens[i] == firstToken && tokens[i + 1] == secondToken)
             {
+                result.Add(mergedToken);
+                i++;
                 changed = true;
-                tokens[offset] = mergedToken;
-                tokens.RemoveAt(offset + 1);
-                offset++;
-                count--;
+            }
+            else
+            {
+                result.Add(tokens[i]);
             }
         }
 
-        return changed;
+        if (changed)
+        {
+            tokens.Clear();
+            tokens.AddRange(result);
+        }
 
+        return changed;
     }
 
     public override string ToString() => rule;
