@@ -21,22 +21,26 @@ public static class Settings
         public const string SolutionFileName = "Gec.sln";
     }
 
+    // Humble dev-phase budget for fast iteration (~283K params, ~2-3 min runs).
+    // Chinchilla-optimal for the current 19.5M-token corpus is DModel 96 / NHeads 4 /
+    // NLayers 7 / DFf 384 / MaxSeqLen 384 (~931K params) with DefaultSteps 5080 — switch
+    // back to those once the design has settled and it's time for a real training run.
     public static class Model
     {
-        public const int DModel = 96;
+        public const int DModel = 64;
 
-        public const int NHeads = 6;
+        public const int NHeads = 4;
 
         public const int NLayers = 4;
 
-        public const int DFf = 384;
+        public const int DFf = 256;
 
-        public const int MaxSeqLen = 256;
+        public const int MaxSeqLen = 128;
     }
 
     public static class Training
     {
-        public const int DefaultSteps = 3300;
+        public const int DefaultSteps = 1500;
 
         public const double LearningRate = 3e-3;
 
