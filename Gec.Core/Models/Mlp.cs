@@ -3,6 +3,9 @@ using Gec.Core.Training;
 
 namespace Gec.Core.Models;
 
+/// <summary>
+/// Encapsulates a multi-layer perceptron (MLP) with a single hidden layer.
+/// </summary>
 public class Mlp
 {
     private readonly Linear _up;

@@ -32,6 +32,11 @@ public class LayerNorm
         yield return _betaParameter;
     }
 
+    /// <summary>
+    /// Apply layer normalization to each row in a matrix. Layer normalization takes the elements in a row and shift
+    /// them so the average is zero, and scale them so the variance is 1. It then takes two learned parameters
+    /// and scales/shifts the normalized values using gamma/beta.
+    /// </summary>
     public double[,] Forward(double[,] input) // input shape: [seqLen, dim]
     {
         var rows = input.Rows();

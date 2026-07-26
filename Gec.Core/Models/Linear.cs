@@ -4,6 +4,9 @@ using Gec.Core.Training;
 
 namespace Gec.Core.Models;
 
+/// <summary>
+/// Encapsulates a linear affine matrix transformation
+/// </summary>
 public class Linear
 {
     private readonly double[,] _weights; // shape: [inputDim, outputDim]
@@ -14,6 +17,10 @@ public class Linear
 
     private double[,] _input = null!;
 
+    /// <summary>
+    /// Initialize a new linear affine matrix transformation, filling the weight matrix with gaussian noise with a standard deviation
+    /// of 0.02, while setting the bias vector to zero.
+    /// </summary>
     public Linear(int inputDim, int outputDim, Random? random = null, string name = "linear")
     {
         _weights = new double[inputDim, outputDim];
@@ -32,12 +39,18 @@ public class Linear
         _biasParameter = new VectorParameter($"{name}.bias", _bias);
     }
 
+    /// <summary>
+    /// Exposes the weight and bias parameters for optimization. 
+    /// </summary>
     public IEnumerable<Parameter> Parameters()
     {
         yield return _weightParameter;
         yield return _biasParameter;
     }
 
+    /// <summary>
+    /// Applies the linear affine transformation to the input matrix.       
+    /// </summary>
     public double[,] Forward(double[,] input) // input shape: [seqLen, inputDim]
     {
         _input = input;

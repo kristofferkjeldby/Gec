@@ -2,8 +2,14 @@ using Gec.Core.Extensions;
 
 namespace Gec.Core.Common;
 
+/// <summary>
+/// Collection of simple matrix operations and helpers.
+/// </summary>
 public static class Matrix
 {
+    /// <summary>
+    /// Simple matrix addition of two matrixes with same dimensions.
+    /// </summary>
     public static double[,] Matadd(double[,] matrix1, double[,] matrix2)
     {
         if (matrix1.GetLength(0) != matrix2.GetLength(0))
@@ -28,6 +34,9 @@ public static class Matrix
         return result;
     }
     
+    /// <summary>
+    /// Applies a provided operation on each element in a matrix and returns the result.
+    /// </summary>
     public static double[,] ApplyElement(double[,] matrix, Func<double, double> func)
     {
         var rows = matrix.GetLength(0);
@@ -64,6 +73,9 @@ public static class Matrix
         return result;
     }
     
+    /// <summary>
+    /// Applies a provided operation on each row in a matrix
+    /// </summary>
     public static double[,] ApplyRows(double[,] matrix, Func<double[], double[]> func)
     {
         var rows = matrix.Rows();
