@@ -13,11 +13,11 @@ vocabulary, encode the corpus to token ids, train the model, then sample from it
 Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
-python3 generate_corpus.py                                       # writes Gec.Console/Data/corpus.txt
+# put any plain-text corpus at Gec.Console/Data/corpus.txt
 dotnet run --project Gec.Console -- vocab                        # corpus.txt  -> vocab.json + merges.txt
 dotnet run --project Gec.Console -- tokenize                     # corpus.txt  -> tokens.txt
 dotnet run --project Gec.Console -c Release -- train             # tokens.txt  -> train/val + model.json
-dotnet run --project Gec.Console -c Release -- complete "The small cat "
+dotnet run --project Gec.Console -c Release -- complete "Once upon a time "
 ```
 
 Use `-c Release` for `train` and `complete`; a debug build is several times slower.
@@ -44,9 +44,9 @@ dotnet run --project Gec.Console -- vocab Gec.Console/Data/corpus.txt 500
 ```
 
 ```
-Corpus     .../Gec.Console/Data/corpus.txt (250009 characters)
+Corpus     .../Gec.Console/Data/corpus.txt (8028411 characters)
 Training   500 merges...
-Vocabulary 543 tokens (43 characters + 500 merges)
+Vocabulary 565 tokens (65 characters + 500 merges)
 Written    .../Gec.Console/Data/vocab.json
 Written    .../Gec.Console/Data/merges.txt
 ```
@@ -64,9 +64,9 @@ dotnet run --project Gec.Console -- tokenize
 ```
 
 ```
-Corpus     .../Gec.Console/Data/corpus.txt (250009 characters)
-Vocabulary .../Gec.Console/Data/vocab.json (543 tokens, 500 merges)
-Encoded    53356 tokens (4,69 characters per token)
+Corpus     .../Gec.Console/Data/corpus.txt (8028411 characters)
+Vocabulary .../Gec.Console/Data/vocab.json (565 tokens, 500 merges)
+Encoded    2791025 tokens (2,88 characters per token)
 Written    .../Gec.Console/Data/tokens.txt
 ```
 
@@ -81,27 +81,34 @@ split is by position rather than random, so validation text is never trained on 
 the same split. Architecture and hyperparameters come from
 [`Settings`](Gec.Console/Configuration/Settings.cs); the vocabulary size comes from `vocab.json`.
 
+Each batch item is backpropagated through its own `GptModel` replica, up to `Workers` replicas running
+at once via [`ParallelTrainer`](Gec.Core/Training/ParallelTrainer.cs). Gradients from every replica are
+summed into replica 0 before the optimizer step, then the updated weights are broadcast back out —
+mathematically identical to a sequential loop over the batch, just parallelized across cores.
+
 ```bash
 dotnet run --project Gec.Console -c Release -- train
 dotnet run --project Gec.Console -c Release -- train "" "" "" 300   # fewer steps
 ```
 
 ```
-Tokens     .../Data/tokens.txt (53356 tokens, 48020 train / 5336 validation)
+Tokens     .../Data/tokens.txt (2791025 tokens, 2511922 train / 279103 validation)
 Written    .../Data/train.txt
 Written    .../Data/val.txt
-Model      2 layers, dModel 64, 4 heads, vocab 543 (172.191 parameters)
-Training   1150 steps, batch 8, learning rate 0,003
+Model      4 layers, dModel 96, 6 heads, vocab 565 (581.173 parameters)
+Training   3300 steps, batch 10, learning rate 0,003
 
-  step    50/1150   train loss 4,1251   validation loss 4,1054   5,0s
-  step   500/1150   train loss 2,0263   validation loss 2,2108   49,8s
-  step  1150/1150   train loss 1,9971   validation loss 2,0905   115,3s
+  step   100/3300   train loss 5,2546   validation loss 5,2656   37,2s
+  step  1000/3300   train loss 3,5246   validation loss 3,6404   502,3s
+  step  2000/3300   train loss 2,8693   validation loss 2,8781   1155,7s
+  step  3300/3300   train loss 2,4189   validation loss 2,4217   1952,9s
 
-Written    .../Data/model.json (3.718 KB)
+Written    .../Data/model.json (12.351 KB)
 ```
 
-The defaults are tuned for roughly a two-minute run. Train and validation loss stay close together,
-which is the sign that the model is learning the grammar rather than memorizing the corpus.
+At the current defaults, a full run takes on the order of half an hour. Train and validation loss stay
+close together, which is the sign that the model is learning the grammar rather than memorizing the
+corpus.
 
 ### complete
 
@@ -113,34 +120,38 @@ Encodes the prompt, then extends it one token at a time by sampling from the mod
 distribution. Contexts longer than `MaxSeqLen` slide, so only the most recent window is fed back in.
 
 ```bash
-dotnet run --project Gec.Console -c Release -- complete "The small cat "
-dotnet run --project Gec.Console -c Release -- complete "A tired farmer " 120
+dotnet run --project Gec.Console -c Release -- complete "Once upon a time "
+dotnet run --project Gec.Console -c Release -- complete "The little fox " 120
 ```
 
 ```
-Model      .../Data/model.json (2 layers, dModel 64, vocab 543)
-Prompt     The small cat
-Generated  60 tokens at temperature 0,8
+Model      .../Data/model.json (4 layers, dModel 96, vocab 565)
+Prompt     Once upon a time
+Generated  80 tokens at temperature 0,8
 
-The small cat counts the candles before dinner.
-Tobias dreams sometimes along the forest.
-The black singer likes to drink juice.
-The busy crow keeps flowers in the harbour.
-A white crow listens and shares cheese.
-The grey sailor paints the small boats in the winter.
+Once upon a time to eatch together.
+
+"Will you come back?" asked Ellie.
+
+"Yes!" said Pip.
+
+Pip Maya sat down. He kept out her own her wings. She saw the ducks song of tree. He looked very quiet.
+
+Nextraw a soft shell. "Is this your familyear
 ```
 
-None of those sentences appear in the corpus. The model has picked up the sentence shapes, the
-article and agreement rules, and which objects each verb takes — `drink juice`, `paints the boats`,
-`counts the candles` — rather than reproducing lines it saw.
+The model has picked up story structure it never saw verbatim — titles, quoted dialogue with `said`/`asked`
+tags, character names, paragraph breaks — well before the underlying grammar and spelling are reliable.
+At 581K parameters and a half-hour of training this is expected; the shapes are right, the fine-grained
+correctness is not yet.
 
 ## The corpus
 
-`generate_corpus.py` writes ~250 KB from a slot grammar: a fixed set of sentence shapes filled from
-word lists, with correct articles, subject-verb agreement, and verbs restricted to objects they can
-plausibly take. The number of possible sentences is far larger than the corpus, so memorizing is not
-a shortcut, and generation quality is easy to judge by eye. It is seeded, so the same corpus comes
-out every time.
+`corpus.txt` is a plain UTF-8 text file — drop in any prose and the rest of the pipeline adapts to it,
+since vocabulary size, token count, and model size all derive from whatever is in this file. The
+default corpus is currently ~8 MB of short, simple children's stories, generated up front as training
+data: simple sentences and everyday vocabulary keep the language uniform enough for a small model to
+learn from, while still being real, varied English rather than a fixed grammar.
 
 ## File formats
 
@@ -157,7 +168,7 @@ Deliberately plain, so every stage is inspectable.
 `config` alone determines the architecture, so loading rebuilds the model from it and fills the
 parameters in order, checking each name and shape as it goes. Parameter names are hierarchical
 (`block0.mlp.up.weights`), and `values` is written one matrix row per line (wrapped at 32 numbers),
-so a `[543, 64]` embedding reads as one line per token.
+so a `[565, 96]` embedding reads as one line per token.
 
 ## Project layout
 

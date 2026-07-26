@@ -70,7 +70,7 @@ internal static class CompleteCommand
             return 1;
         }
 
-        var random = new Random(Settings.Completion.Seed);
+        var random = new Random();
         var generated = new List<int>();
 
         for (var i = 0; i < maxTokens; i++)

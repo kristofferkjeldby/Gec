@@ -60,7 +60,5 @@ public static class Settings
         public const int DefaultMaxTokens = 64;
 
         public const double Temperature = 0.8;
-
-        public const int Seed = 1337;
     }
 }
