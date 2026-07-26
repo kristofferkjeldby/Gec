@@ -101,8 +101,11 @@ internal static class TrainCommand
             var trainLoss = totalLoss / Settings.Training.BatchSize;
             var validationLoss = Evaluate(trainer, validationTokens, config.MaxSeqLen);
 
+            var elapsed = stopwatch.Elapsed;
+            var eta = TimeSpan.FromSeconds(elapsed.TotalSeconds / step * (steps - step));
+
             SystemConsole.WriteLine(
-                $"  step {step,5}/{steps}   train loss {trainLoss:0.0000}   validation loss {validationLoss:0.0000}   {stopwatch.Elapsed.TotalSeconds:0.0}s");
+                $"  step {step,5}/{steps}   train loss {trainLoss:0.0000}   validation loss {validationLoss:0.0000}   {elapsed.TotalSeconds:0.0}s   ETA {eta:hh\\:mm\\:ss}");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(modelPath)!);
