@@ -44,7 +44,7 @@ public class Mlp
         var (gradActivated, gradWDown, gradBDown) = _down.Backward(_activated, gradOutput);
         
         // Undo step 2
-        var gradHidden = Matrix.ApplyElementBackward(_hidden, gradActivated, Gelu.GeluApproxBackward);
+        var gradHidden = Matrix.ApplyElementBackward(_hidden, gradActivated, Gelu.GeluApproxDerivative);
         
         // Undo step 1
         var (gradInput, gradWUp, gradBUp) = _up.Backward(input, gradHidden);
@@ -55,7 +55,7 @@ public class Mlp
     public double[,] Backpropagate(double[,] gradOutput)
     {
         var gradActivated = _down.Backpropagate(gradOutput);
-        var gradHidden = Matrix.ApplyElementBackward(_hidden, gradActivated, Gelu.GeluApproxBackward);
+        var gradHidden = Matrix.ApplyElementBackward(_hidden, gradActivated, Gelu.GeluApproxDerivative);
 
         return _up.Backpropagate(gradHidden);
     }

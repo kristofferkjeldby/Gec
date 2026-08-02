@@ -39,12 +39,12 @@ public class GeluTests
     [TestCase(0.5)]
     [TestCase(1.0)]
     [TestCase(2.0)]
-    public void GeluApproxBackward_MatchesCentralDifferenceOfForward(double x)
+    public void GeluApproxDerivative_MatchesCentralDifferenceOfForward(double x)
     {
         const double h = 1e-5;
         var numericalDerivative = (Gelu.GeluApproxForward(x + h) - Gelu.GeluApproxForward(x - h)) / (2 * h);
 
-        var analyticalDerivative = Gelu.GeluApproxBackward(x);
+        var analyticalDerivative = Gelu.GeluApproxDerivative(x);
 
         Assert.That(analyticalDerivative, Is.EqualTo(numericalDerivative).Within(1e-4));
     }
