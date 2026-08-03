@@ -1,7 +1,13 @@
 namespace Gec.Core.Common;
 
+/// <summary>
+/// Softmax function.
+/// </summary>
 public static class Softmax
 {
+    /// <summary>
+    /// Applies the softmax function to the input array.
+    /// </summary>
     public static double[] Forward(double[] input)
     {
         var output = new double[input.Length];
@@ -9,6 +15,15 @@ public static class Softmax
         return output;
     }
 
+    /// <summary>
+    /// Applies the softmax function to the input span and stores the result in the output span.
+    /// The softmax function takes an input vector and turns it into a probability distribution where the probabilities of each value
+    /// are proportional to the exponential of the input values. It does this by first subtracting the maximum value from each input
+    /// value. This is not part of the softmax function itself, but but prevents overflow and even e^30 is over a billion.
+    /// So by subtracting the maximum value, we ensure that the largest value is 0 (and e^0 = 1).
+    /// Then the actual softmax, all elements are exponentiated and then divided by the sum of all exponentials.
+    /// This ensures that the output values are in the range (0, 1) and sum to 1.
+    /// </summary>
     public static void Forward(ReadOnlySpan<double> input, Span<double> output)
     {
         var max = double.NegativeInfinity;
